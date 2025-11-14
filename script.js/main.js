@@ -14,16 +14,6 @@ if (nextBtn) {
   });
 }
 
-// Xử lý nút avatar người dùng
-const avatarBtn = document.querySelector('.avatar-button');
-if (avatarBtn) {
-  avatarBtn.addEventListener('click', (e) => {
-    avatarBtn.classList.toggle('open');
-    alert('HCMUT SSO clicked');
-  });
-}
-
-
 // Xử lý nút thông báo (chuông)
 const bellBtn = document.querySelector('.bell-button');
 if (bellBtn) {
@@ -70,7 +60,7 @@ document.querySelectorAll('.register-link').forEach(link => {
     e.preventDefault();
     const next = this.getAttribute('href') || 'program.html';
     // Thêm tham số next để sau khi đăng nhập xong sẽ quay lại trang này
-    location.href = 'signup.html?next=' + encodeURIComponent(next);
+    location.href = 'role.html?next=' + encodeURIComponent(next);
   });
 });
 
@@ -86,14 +76,14 @@ function updateAuthUI() {
   if (ssoBox) {
     if (logged) {
       const roleLabel = role ? (role === 'student' ? 'Sinh viên' : role === 'admin' ? 'Quản trị' : role) : 'Người dùng';
-      ssoBox.textContent = username ? `${username}` : `${roleLabel}`;
+      ssoBox.textContent = `Xin chào, ${roleLabel} ${username}`;
     } else {
       ssoBox.textContent = 'HCMUT_SSO';
     }
   }
 
   // If there's a login-link element (older pages), update it too
-  const loginLink = document.getElementById('login-link');
+  const loginLink = document.getElementById('sso-button');
   if (!loginLink) return;
   if (logged) {
     const roleLabel = role ? (role === 'student' ? 'Sinh viên' : role === 'admin' ? 'Quản trị' : role) : 'Người dùng';
@@ -108,9 +98,9 @@ function updateAuthUI() {
       }
     };
   } else {
-    loginLink.textContent = 'Đăng nhập';
+    loginLink.textContent = 'HCMUT_SSO';
     const next = location.pathname.substring(location.pathname.lastIndexOf('/')+1) || 'main.html';
-    loginLink.href = 'signup.html?next=' + encodeURIComponent(next);
+    loginLink.href = 'role.html?next=' + encodeURIComponent(next);
     loginLink.onclick = null;
   }
 }
@@ -380,13 +370,15 @@ if (ssoBtn) {
     const logged = isHcmutLoggedIn();
     if (logged) {
       // logout
-      try { localStorage.removeItem('hcmut_logged_in'); localStorage.removeItem('hcmut_role'); } catch(e){}
-      alert('Đã đăng xuất HCMUT_SSO');
-      updateAuthUI();
+      if (confirm('Bạn có muốn đăng xuất không?')) {
+        try { localStorage.removeItem('hcmut_logged_in'); localStorage.removeItem('hcmut_role'); } catch(e){}
+        alert('Đã đăng xuất HCMUT_SSO');
+        location.href = 'main.html';
+      }
     } else {
       // redirect to signup to choose role and login, pass current page as next
       const next = location.pathname.substring(location.pathname.lastIndexOf('/')+1) || 'main.html';
-      location.href = 'signup.html?next=' + encodeURIComponent(next);
+      location.href = 'role.html?next=' + encodeURIComponent(next);
     }
   });
 }
