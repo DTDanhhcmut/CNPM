@@ -27,10 +27,11 @@ class UserManagementSystem {
     }
 
     // Thêm người dùng mới
-    addUser(username, password, role, additionalInfo = {}) {
+    addUser(username, password, role, fullname, additionalInfo = {}) {
         const processedUsername = this.processUsername(username);
         const now = new Date();
         const newUser = {
+            fullname: fullname,
             username: processedUsername,
             originalEmail: username, // Lưu email gốc
             password: this.hashPassword(password), // Lưu mật khẩu đã được mã hóa
@@ -158,8 +159,8 @@ class UserManagementSystem {
 const userSystem = new UserManagementSystem();
 
 // Hàm đăng ký người dùng (được gọi từ form đăng ký)
-window.registerUser = function(username, password, role, additionalInfo = {}) {
-    userSystem.addUser(username, password, role, additionalInfo);
+window.registerUser = function(username, password, role, fullname, additionalInfo = {}) {
+    userSystem.addUser(username, password, role, fullname, additionalInfo);
 }
 
 // Hàm xác thực đăng nhập

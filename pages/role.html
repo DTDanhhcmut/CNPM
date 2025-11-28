@@ -6,29 +6,6 @@
   <title>Đăng ký / Đăng nhập - HCMUT_SSO</title>
   <link rel="stylesheet" href="../style.css/main.css" />
   <script src="../pagesforadmin/datacore.js"></script>
-  <script>
-    function handleRegistration(role) {
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      
-      if (!email || !password) {
-        alert('Vui lòng điền đầy đủ thông tin!');
-        return;
-      }
-      
-      if (!email.endsWith('@hcmut.edu.vn')) {
-        alert('Vui lòng sử dụng email HCMUT!');
-        return;
-      }
-      
-      // Đăng ký người dùng mới
-      window.registerUser(email, password, role);
-      alert('Đăng ký thành công!');
-      
-      // Chuyển đến trang đăng nhập
-      window.location.href = 'login.html';
-    }
-  </script>
   <style>
     body { background: linear-gradient(90deg,#f3f7fa,#eef3f6); }
     .card-center { max-width:520px; margin:60px auto; background:white; border-radius:8px; box-shadow:0 8px 20px rgba(0,0,0,0.08); padding:32px; text-align:center; }
@@ -259,7 +236,7 @@
 
           // Sử dụng hàm registerUser từ datacore.js để lưu vào HCMUT_DATACORE
           if (window.registerUser) {
-            window.registerUser(email, password, role);
+            window.registerUser(email, password, role, fullname);
             
             // Lưu thêm thông tin bổ sung vào localStorage (nếu cần)
             const additionalInfo = {

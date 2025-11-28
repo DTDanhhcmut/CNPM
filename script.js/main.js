@@ -404,6 +404,7 @@ function getAvailableTutors() {
       .filter(u => u.role === 'tutor' && u.fullname && (u.available !== false))
       .map(u => ({
         id: parseInt(u.id?.replace('tutor_', '') || u.username?.replace('tutor', '') || Math.random() * 1000),
+        username: u.username,
         name: u.fullname,
         dept: u.dept || u.department || '',
         subjects: u.subjects || [],
@@ -522,7 +523,7 @@ function renderTutors(list) {
         ${t.bio}
       </div>
       <div>
-        <button class="request-btn register-tutor-btn" data-id="${t.id}" data-tutor-name="${t.name}" ${hasRegistered ? 'disabled' : ''} style="width:100%; padding:12px; ${hasRegistered ? 'background:#6c757d; cursor:not-allowed;' : 'background:#0b72a8; cursor:pointer;'} color:white; border:none; border-radius:6px; font-weight:600; transition:all 0.2s; font-size:15px; box-shadow:0 2px 8px rgba(11, 114, 168, 0.2);" ${hasRegistered ? '' : 'onmouseenter="this.style.transform=\'translateY(-2px)\'; this.style.boxShadow=\'0 4px 12px rgba(11, 114, 168, 0.3)\'" onmouseleave="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'0 2px 8px rgba(11, 114, 168, 0.2)\'"'}>
+        <button class="request-btn register-tutor-btn" data-id="${t.id}" data-tutor-username="${t.username}" data-tutor-name="${t.name}" ${hasRegistered ? 'disabled' : ''} style="width:100%; padding:12px; ${hasRegistered ? 'background:#6c757d; cursor:not-allowed;' : 'background:#0b72a8; cursor:pointer;'} color:white; border:none; border-radius:6px; font-weight:600; transition:all 0.2s; font-size:15px; box-shadow:0 2px 8px rgba(11, 114, 168, 0.2);" ${hasRegistered ? '' : 'onmouseenter="this.style.transform=\'translateY(-2px)\'; this.style.boxShadow=\'0 4px 12px rgba(11, 114, 168, 0.3)\'" onmouseleave="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'0 2px 8px rgba(11, 114, 168, 0.2)\'"'}>
           ${hasRegistered ? '⏳ Chờ xác nhận' : '📝 Đăng ký'}
         </button>
       </div>
@@ -731,128 +732,129 @@ function initTutorArea() {
   const tutorListEl = document.getElementById('tutor-list');
   if (tutorListEl) {
     tutorListEl.addEventListener('click', (ev) => {
-    const btn = ev.target.closest('.request-btn');
-    if (!btn || btn.disabled) return;
-    
-    const tutorId = btn.getAttribute('data-id');
-    const tutorName = btn.getAttribute('data-tutor-name');
-    const tutor = MOCK_TUTORS.find(x => String(x.id) === String(tutorId));
-    
-    if (!tutor) return;
-    
-    // Kiểm tra đăng nhập
-    const loggedIn = isHcmutLoggedIn();
-    const role = localStorage.getItem('hcmut_role');
-    const username = localStorage.getItem('hcmut_username');
-    
-    if (!loggedIn || role !== 'student' || !username) {
-      alert('Vui lòng đăng nhập với vai trò Sinh viên để đăng ký Tutor.');
-      location.href = 'role.html?next=program.html';
-      return;
-    }
-    
-    // Kiểm tra đã đăng ký chưa
-    if (hasRegisteredWithTutor(tutorId)) {
-      alert('Bạn đã đăng ký với Tutor này rồi.');
-      return;
-    }
-    
-    // Lấy giá trị bộ lọc hiện tại
-    const filterDept = document.getElementById('filter-dept')?.value || '';
-    const filterSubject = document.getElementById('filter-subject')?.value || '';
-    const filterTimeSlot = document.getElementById('filter-timeSlot')?.value || '';
-    
-    // Tạo yêu cầu đăng ký
-    const request = {
-      id: 'req_' + Date.now(),
-      studentUsername: username,
-      tutorId: parseInt(tutorId),
-      tutorName: tutorName,
-      tutorUsername: `tutor_${tutorId}`, // Giả định username của tutor
-      dept: filterDept || tutor.dept,
-      subject: filterSubject || (tutor.subjects && tutor.subjects.length > 0 ? tutor.subjects[0] : ''),
-      timeSlot: filterTimeSlot || (tutor.timeSlots && tutor.timeSlots.length > 0 ? tutor.timeSlots[0] : ''),
-      status: 'pending', // pending, accepted, rejected
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      filterCriteria: {
-        dept: filterDept,
-        subject: filterSubject,
-        timeSlot: filterTimeSlot
-      }
-    };
-    
-    try {
-      // Lưu vào tutor_requests
-      let requests = [];
-      try {
-        requests = JSON.parse(localStorage.getItem('tutor_requests') || '[]');
-      } catch (e) {
-        requests = [];
-      }
-      requests.push(request);
-      localStorage.setItem('tutor_requests', JSON.stringify(requests));
+      const btn = ev.target.closest('.request-btn');
+      if (!btn || btn.disabled) return;
       
-      // Lưu vào HCMUT_DATACORE
-      let datacore = [];
-      try {
-        datacore = JSON.parse(localStorage.getItem('HCMUT_DATACORE') || '[]');
-      } catch (e) {
-        datacore = [];
+      const tutorId = btn.getAttribute('data-id');
+      const tutorName = btn.getAttribute('data-tutor-name');
+      const tutorUsername = btn.getAttribute('data-tutor-username');
+      const tutor = MOCK_TUTORS.find(x => String(x.id) === String(tutorId));
+      
+      if (!tutor) return;
+      
+      // Kiểm tra đăng nhập
+      const loggedIn = isHcmutLoggedIn();
+      const role = localStorage.getItem('hcmut_role');
+      const username = localStorage.getItem('hcmut_username');
+      
+      if (!loggedIn || role !== 'student' || !username) {
+        alert('Vui lòng đăng nhập với vai trò Sinh viên để đăng ký Tutor.');
+        location.href = 'role.html?next=program.html';
+        return;
       }
       
-      const userIndex = datacore.findIndex(u => u.username === username);
-      if (userIndex >= 0) {
-        if (!datacore[userIndex].tutorRequests) {
-          datacore[userIndex].tutorRequests = [];
+      // Kiểm tra đã đăng ký chưa
+      if (hasRegisteredWithTutor(tutorId)) {
+        alert('Bạn đã đăng ký với Tutor này rồi.');
+        return;
+      }
+      
+      // Lấy giá trị bộ lọc hiện tại
+      const filterDept = document.getElementById('filter-dept')?.value || '';
+      const filterSubject = document.getElementById('filter-subject')?.value || '';
+      const filterTimeSlot = document.getElementById('filter-timeSlot')?.value || '';
+      
+      // Tạo yêu cầu đăng ký
+      const request = {
+        id: 'req_' + Date.now(),
+        studentUsername: username,
+        tutorId: parseInt(tutorId),
+        tutorName: tutorName,
+        tutorUsername: tutorUsername,
+        dept: filterDept || tutor.dept,
+        subject: filterSubject || (tutor.subjects && tutor.subjects.length > 0 ? tutor.subjects[0] : ''),
+        timeSlot: filterTimeSlot || (tutor.timeSlots && tutor.timeSlots.length > 0 ? tutor.timeSlots[0] : ''),
+        status: 'pending', // pending, accepted, rejected
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        filterCriteria: {
+          dept: filterDept,
+          subject: filterSubject,
+          timeSlot: filterTimeSlot
         }
-        datacore[userIndex].tutorRequests.push({
-          tutorId: request.tutorId,
-          tutorName: request.tutorName,
-          status: request.status,
-          createdAt: request.createdAt
-        });
-      } else {
-        datacore.push({
-          username: username,
-          role: role,
-          tutorRequests: [{
+      };
+      
+      try {
+        // Lưu vào tutor_requests
+        let requests = [];
+        try {
+          requests = JSON.parse(localStorage.getItem('tutor_requests') || '[]');
+        } catch (e) {
+          requests = [];
+        }
+        requests.push(request);
+        localStorage.setItem('tutor_requests', JSON.stringify(requests));
+        
+        // Lưu vào HCMUT_DATACORE
+        let datacore = [];
+        try {
+          datacore = JSON.parse(localStorage.getItem('HCMUT_DATACORE') || '[]');
+        } catch (e) {
+          datacore = [];
+        }
+        
+        const userIndex = datacore.findIndex(u => u.username === username);
+        if (userIndex >= 0) {
+          if (!datacore[userIndex].tutorRequests) {
+            datacore[userIndex].tutorRequests = [];
+          }
+          datacore[userIndex].tutorRequests.push({
             tutorId: request.tutorId,
             tutorName: request.tutorName,
             status: request.status,
             createdAt: request.createdAt
-          }],
-          createdAt: new Date().toISOString()
-        });
+          });
+        } else {
+          datacore.push({
+            username: username,
+            role: role,
+            tutorRequests: [{
+              tutorId: request.tutorId,
+              tutorName: request.tutorName,
+              status: request.status,
+              createdAt: request.createdAt
+            }],
+            createdAt: new Date().toISOString()
+          });
+        }
+        localStorage.setItem('HCMUT_DATACORE', JSON.stringify(datacore));
+        
+        // Cập nhật UI: Đổi button thành "Chờ xác nhận"
+        btn.disabled = true;
+        btn.style.background = '#6c757d';
+        btn.style.cursor = 'not-allowed';
+        btn.style.transform = 'none';
+        btn.style.boxShadow = 'none';
+        btn.innerHTML = '⏳ Chờ xác nhận';
+        
+        // Thông báo thành công
+        alert(`✅ Đã đăng ký thành công với ${tutorName}!\nYêu cầu đăng ký của bạn đã được gửi. Tutor sẽ xác nhận trong trang "Chương trình cho Tutor".`);
+        
+        // Re-render để đảm bảo UI đồng bộ
+        setTimeout(() => {
+          const currentFilters = {
+            dept: filterDept,
+            subject: filterSubject,
+            timeSlot: filterTimeSlot
+          };
+          const filtered = filterTutors(currentFilters);
+          renderTutors(filtered);
+        }, 100);
+        
+      } catch (err) {
+        console.error('Lỗi khi lưu yêu cầu đăng ký:', err);
+        alert('Có lỗi xảy ra khi đăng ký. Vui lòng thử lại.');
       }
-      localStorage.setItem('HCMUT_DATACORE', JSON.stringify(datacore));
-      
-      // Cập nhật UI: Đổi button thành "Chờ xác nhận"
-      btn.disabled = true;
-      btn.style.background = '#6c757d';
-      btn.style.cursor = 'not-allowed';
-      btn.style.transform = 'none';
-      btn.style.boxShadow = 'none';
-      btn.innerHTML = '⏳ Chờ xác nhận';
-      
-      // Thông báo thành công
-      alert(`✅ Đã đăng ký thành công với ${tutorName}!\nYêu cầu đăng ký của bạn đã được gửi. Tutor sẽ xác nhận trong trang "Chương trình cho Tutor".`);
-      
-      // Re-render để đảm bảo UI đồng bộ
-      setTimeout(() => {
-        const currentFilters = {
-          dept: filterDept,
-          subject: filterSubject,
-          timeSlot: filterTimeSlot
-        };
-        const filtered = filterTutors(currentFilters);
-        renderTutors(filtered);
-      }, 100);
-      
-    } catch (err) {
-      console.error('Lỗi khi lưu yêu cầu đăng ký:', err);
-      alert('Có lỗi xảy ra khi đăng ký. Vui lòng thử lại.');
-    }
     });
   }
 }
