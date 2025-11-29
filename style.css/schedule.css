@@ -151,13 +151,54 @@
     font-weight: 500;
 }
 .calendar-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    /* Use a normal block container so inner weekday and day grids
+       can each span the full width without being placed into parent's
+       grid cells. Previously this was a grid which caused the two
+       children (.calendar-weekdays and .calendar-days) to occupy the
+       first columns and produce misalignment. */
+    display: block;
+    width: 100%;
     text-align: center;
     font-size: 12px;
 }
 .calendar-grid div {
     padding: 5px 0;
+}
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 6px;
+}
+.calendar-weekday {
+    font-size: 12px;
+    color: #6c757d;
+}
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+}
+.calendar-day {
+    min-height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.calendar-day.empty { opacity: 0.25; }
+.calendar-day-btn {
+    border: none;
+    background: transparent;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+.calendar-day-btn:hover { background: #f0f0f0; }
+.calendar-day-btn.selected {
+    background: var(--primary-color);
+    color: #fff;
+    font-weight: 600;
 }
 .day-header {
     font-weight: bold;
