@@ -17,8 +17,8 @@
     <nav class="nav-links">
       <a href="main.html">Trang chủ</a>
       <a class="register-link" href="program.html">Đăng kí chương trình</a>
-      <a href="#">Quản lý lịch</a>
-      <a href="#">HCMUT_LIBRARY</a>
+      <a class="register-link" href="schedule.html">Quản lý lịch</a>
+      <a class="register-link" href="accmanage.html">Quản lý tài khoản</a>
     </nav>
     <div class="user-icons">
       <button class="bell-button" aria-label="Thông báo" title="Thông báo" aria-pressed="false">
@@ -28,7 +28,7 @@
         </svg>
         <span class="visually-hidden">Thông báo</span>
       </button>
-      <button class="avatar-button sso-button" aria-label="HCMUT SSO" title="HCMUT SSO" aria-expanded="false">
+      <button class="avatar-button sso-button" aria-label="HCMUT SSO" title="HCMUT SSO" aria-expanded="false" onclick="window.location.href='role.html'">
         <span class="sso-box">HCMUT_SSO</span>
       </button>
     </div>
@@ -144,7 +144,7 @@
 
     document.getElementById('login-cancel-btn').addEventListener('click', function(){
       // go back to signup to choose another method or cancel
-      location.href = 'signup.html?next=' + encodeURIComponent(next);
+      location.href = 'role.html?next=' + encodeURIComponent(next);
     });
   })();
   </script>

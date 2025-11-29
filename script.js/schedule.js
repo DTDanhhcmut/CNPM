@@ -63,27 +63,24 @@ let currentNoteConsultationId = null;
 let nextConsultationId = 6; 
 let nextSlotId = 3;
 let currentSelectedDate = '27/10/2025'; // Giả lập ngày đang chọn trên lịch
-
+/*
 // Dữ liệu Tutor
 let tutorConsultations = [
     { id: 1, student: 'Trần Thị B', subject: 'Tiếng Anh', date: '26/10/2025', time: '14:00 - 15:00', status: 'confirmed' },
     { id: 2, student: 'Nguyễn Văn A', subject: 'Toán học', date: '27/10/2025', time: '09:00 - 10:00', status: 'pending' },
     { id: 3, student: 'Lê Văn C', subject: 'Vật lý', date: '26/10/2025', time: '10:00 - 11:00', status: 'completed' },
 ];
-
+*/
 let tutorAvailabilitySlots = [
     { id: 1, time: '16:00 - 17:00', date: '27/10/2025' }, 
     { id: 2, time: '14:00 - 15:00', date: '27/10/2025' }
 ];
 
 // Dữ liệu Sinh viên
-let studentUpcomingConsultations = [
-    { id: 4, subject: 'Toán học', date: '27/10/2025', time: '09:00 - 10:00', status: 'pending' },
-    { id: 5, subject: 'Tiếng Anh', date: '28/10/2025', time: '14:00 - 15:00', status: 'confirmed' }
-];
-let studentHistoryConsultations = [
-    { id: 3, subject: 'Vật lý', date: '26/10/2025', time: '10:00 - 11:00', status: 'completed' } 
-];
+let studentUpcomingConsultations = [];
+let studentHistoryConsultations = [];
+
+let tutorConsultations = [];
 
 // ---Helper Functions---
 const getStatusDisplay = (status) => {
@@ -185,6 +182,35 @@ function renderTutorConsultations() {
     const container = document.getElementById('tutor-consultations-container');
     if (!container) return;
 
+    tutorConsultations = [];
+    const tutorReq = JSON.parse(localStorage.getItem('tutor_requests') || []);
+    tutorReq.forEach(req => {
+        if(req.tutorUsername === username) {
+            // Tìm tên sinh viên 
+            const studentUser = JSON.parse(localStorage.getItem('hcmut_users') || '[]').find(u => u.username === req.studentUsername);
+            if (!studentUser) return;
+             // Tính giờ tư vấn
+            const begin = parseInt(req.timeSlot) + 5;
+            const end = begin + 1;
+            const time = `${begin}:00 - ${end}:00`;
+            // Tính ngày tư vấn (3 ngày sau ngày tạo yêu cầu)
+            const date = new Date(req.createdAt);
+            date.setDate(date.getDate() + 3);
+            const yyyy = date.getUTCFullYear();
+            const mm = String(date.getUTCMonth() + 1).padStart(2, "0");
+            const dd = String(date.getUTCDate()).padStart(2, "0");
+            const consultationDate = `${yyyy}-${mm}-${dd}`;
+            tutorConsultations.push({
+                id: req.id,
+                student: studentUser.fullname,
+                subject: req.subject,
+                date: consultationDate,
+                time: time,
+                status: req.status
+            })
+        }
+    }) 
+
     const sortedConsultations = tutorConsultations.sort((a, b) => {
         const order = { pending: 1, confirmed: 2, completed: 3, cancelled: 4 };
         return order[a.status] - order[b.status];
@@ -196,7 +222,7 @@ function renderTutorConsultations() {
         if (c.status === 'pending') {
             actionButtons = `
                 <div class="mt-2">
-                    <button class="btn btn-sm btn-primary btn-action-sm" onclick="confirmConsultation(${c.id})">
+                    <button class="btn btn-sm btn-primary btn-action-sm" onclick="confirmConsultation('${c.id}')">
                         <i class="fas fa-check me-1"></i> Xác nhận
                     </button>
                     <button class="btn btn-sm btn-outline-secondary btn-action-sm" onclick="changeConsultation(${c.id})">
@@ -300,6 +326,41 @@ function renderStudentView() {
         `).join('');
         availableContainer.innerHTML = slotsHtml;
     }
+    studentUpcomingConsultations = [];
+    studentHistoryConsultations = [];
+    const tutorReq = JSON.parse(localStorage.getItem('tutor_requests') || []);
+    tutorReq.forEach(req => {
+        if(req.studentUsername === username) {
+            // Tính giờ tư vấn
+            const begin = parseInt(req.timeSlot) + 5;
+            const end = begin + 1;
+            const time = `${begin}:00 - ${end}:00`;
+            // Tính ngày tư vấn (3 ngày sau ngày tạo yêu cầu)
+            const date = new Date(req.createdAt);
+            date.setDate(date.getDate() + 3);
+            const yyyy = date.getUTCFullYear();
+            const mm = String(date.getUTCMonth() + 1).padStart(2, "0");
+            const dd = String(date.getUTCDate()).padStart(2, "0");
+            const consultationDate = `${yyyy}-${mm}-${dd}`;
+            if (req.status === 'pending' || req.status === 'confirmed') {
+                studentUpcomingConsultations.push({
+                    id: req.id,
+                    subject: req.subject,
+                    date: consultationDate,
+                    time: time,
+                    status: req.status
+                })
+            } else {
+                studentHistoryConsultations.push({
+                    id: req.id,
+                    subject: req.subject,
+                    date: consultationDate,
+                    time: time,
+                    status: req.status
+                })
+            }
+        }
+    }) 
 
     const upcomingContainer = document.getElementById('student-upcoming-consultations-container');
     if (upcomingContainer) {
@@ -313,7 +374,7 @@ function renderStudentView() {
                     <i class="far fa-calendar-alt"></i> ${c.date}
                     <i class="far fa-clock ms-3"></i> ${c.time}
                 </div>
-                <button class="btn-danger-lg-custom btn-cancel" onclick="cancelStudentConsultation(${c.id})">
+                <button class="btn-danger-lg-custom btn-cancel" onclick="cancelStudentConsultation('${c.id}')">
                     <i class="fas fa-times me-1"></i> Hủy buổi học
                 </button>
             </div>
@@ -642,7 +703,8 @@ document.getElementById('finalConfirmStudentBookingBtn').onclick = function() {
 let currentConsultationId = null;
 
 window.cancelStudentConsultation = function(consultationId) {
-    const consultation = studentUpcomingConsultations.find(c => c.id === consultationId);
+    const tutorReq = JSON.parse(localStorage.getItem('tutor_requests') || []);
+    const consultation = tutorReq.find(c => c.id === consultationId);
     if (!consultation) return;
 
     currentConsultationId = consultationId;
@@ -654,12 +716,12 @@ window.cancelStudentConsultation = function(consultationId) {
 document.getElementById('finalCancelStudentBookingBtn').onclick = function() {
     const consultationId = currentConsultationId;
     
-    const index = studentUpcomingConsultations.findIndex(c => c.id === consultationId);
+    const tutorReq = JSON.parse(localStorage.getItem('tutor_requests') || []);
+    const index = tutorReq.findIndex(c => c.id === consultationId);
     if (index > -1) {
-        const cancelled = studentUpcomingConsultations.splice(index, 1)[0];
-        
-        studentHistoryConsultations.push({ ...cancelled, status: 'cancelled' });
-
+        tutorReq[index].status = 'cancelled';
+        localStorage.setItem('tutor_requests', JSON.stringify(tutorReq));
+        /*
         tutorAvailabilitySlots.push({ id: nextSlotId++, time: cancelled.time, date: cancelled.date });
         tutorAvailabilitySlots.sort((a, b) => a.time.localeCompare(b.time));
 
@@ -667,8 +729,9 @@ document.getElementById('finalCancelStudentBookingBtn').onclick = function() {
         if (tutorIndex > -1) {
              tutorConsultations.splice(tutorIndex, 1);
         }
-
-        renderStudentView();
+        */
+        renderTutorConsultations();
+        renderStudentView(); 
     }
     cancelStudentBookingModal.hide();
     saveScheduleData();
@@ -681,7 +744,8 @@ window.confirmConsultation = function(consultationId) {
         return;
     }
     
-    const consultation = tutorConsultations.find(c => c.id === consultationId);
+    const tutorReq = JSON.parse(localStorage.getItem('tutor_requests') || []);
+    const consultation = tutorReq.find(c => c.id === consultationId);
     if (!consultation) return;
 
     currentConsultationId = consultationId;
@@ -693,17 +757,15 @@ window.confirmConsultation = function(consultationId) {
 document.getElementById('finalConfirmConsultationBtn').onclick = function() {
     const consultationId = currentConsultationId;
     
-    const tutorIndex = tutorConsultations.findIndex(c => c.id === consultationId);
-    const studentIndex = studentUpcomingConsultations.findIndex(c => c.id === consultationId);
+    const tutorReq = JSON.parse(localStorage.getItem('tutor_requests') || []);
+    const index = tutorReq.findIndex(c => c.id === consultationId);
     
-    if (tutorIndex > -1) {
-        tutorConsultations[tutorIndex].status = 'confirmed';
-        
-        if (studentIndex > -1) {
-            studentUpcomingConsultations[studentIndex].status = 'confirmed';
-        }
+    if (index > -1) {
+        tutorReq[index].status = 'confirmed';
+        localStorage.setItem('tutor_requests', JSON.stringify(tutorReq));
 
         renderTutorConsultations();
+        renderStudentView(); 
     }
     saveScheduleData();
     confirmConsultationModal.hide();
@@ -790,7 +852,8 @@ window.cancelTutorConsultation = function(consultationId) {
         return;
     }
     
-    const consultation = tutorConsultations.find(c => c.id === consultationId);
+    const tutorReq = JSON.parse(localStorage.getItem('tutor_requests') || []);
+    const consultation = tutorReq.find(c => c.id === consultationId);
     if (!consultation) return;
 
     currentConsultationId = consultationId;
@@ -802,12 +865,12 @@ window.cancelTutorConsultation = function(consultationId) {
 document.getElementById('finalCancelConsultationBtn').onclick = function() {
     const consultationId = currentConsultationId;
     
-    const index = tutorConsultations.findIndex(c => c.id === consultationId);
+    const tutorReq = JSON.parse(localStorage.getItem('tutor_requests') || []);
+    const index = tutorReq.findIndex(c => c.id === consultationId);
     if (index > -1) {
-        const cancelled = tutorConsultations[index];
-        
-        cancelled.status = 'cancelled'; 
-
+        tutorReq[index].status = 'cancelled';
+        localStorage.setItem('tutor_requests', JSON.stringify(tutorReq));
+        /*
         const studentIndex = studentUpcomingConsultations.findIndex(c => c.id === consultationId);
         if (studentIndex > -1) {
             const studentCancelled = studentUpcomingConsultations.splice(studentIndex, 1)[0];
@@ -816,7 +879,7 @@ document.getElementById('finalCancelConsultationBtn').onclick = function() {
         
         tutorAvailabilitySlots.push({ id: nextSlotId++, time: cancelled.time, date: cancelled.date });
         tutorAvailabilitySlots.sort((a, b) => a.time.localeCompare(b.time));
-
+        */ 
         renderTutorConsultations();
         renderStudentView(); 
     }
