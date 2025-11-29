@@ -106,23 +106,16 @@
                         <p class="small text-secondary mb-3">Chọn ngày để thêm hoặc xem lịch rảnh</p>
                         <div class="card-body">
                             <div class="calendar-header mb-2">
-                                <i class="fas fa-chevron-left text-muted" role="button"></i>
-                                <span>October 2025</span>
-                                <i class="fas fa-chevron-right text-muted" role="button"></i>
+                                <i id="tutor-cal-prev" class="fas fa-chevron-left text-muted" role="button"></i>
+                                <div class="d-flex align-items-center gap-2">
+                                    <select id="tutor-cal-month" class="form-select form-select-sm"></select>
+                                    <select id="tutor-cal-year" class="form-select form-select-sm"></select>
+                                    <span id="tutor-cal-title" class="ms-2 small text-muted"></span>
+                                </div>
+                                <i id="tutor-cal-next" class="fas fa-chevron-right text-muted" role="button"></i>
                             </div>
-                            <div class="calendar-grid">
-                                <div class="day-header">Su</div>
-                                <div class="day-header">Mo</div>
-                                <div class="day-header">Tu</div>
-                                <div class="day-header">We</div>
-                                <div class="day-header">Th</div>
-                                <div class="day-header">Fr</div>
-                                <div class="day-header">Sa</div>
-                                <div class="text-muted">28</div><div class="text-muted">29</div><div class="text-muted">30</div><div class="text-muted">1</div><div class="text-muted">2</div><div class="text-muted">3</div><div class="text-muted">4</div>
-                                <div>5</div><div>6</div><div>7</div><div>8</div><div>9</div><div>10</div><div>11</div>
-                                <div>12</div><div>13</div><div>14</div><div>15</div><div>16</div><div>17</div><div>18</div>
-                                <div>19</div><div>20</div><div>21</div><div>22</div><div>23</div><div>24</div><div>25</div>
-                                <div>26</div><div class="day-number active">27</div><div>28</div><div>29</div><div>30</div><div>31</div><div class="text-muted">1</div>
+                            <div class="calendar-grid" id="tutor-calendar-grid">
+                                <!-- dynamic calendar will render here -->
                             </div>
                         </div>
                     </div>
@@ -152,23 +145,16 @@
                         <p class="small text-secondary mb-3">Chọn ngày để xem lịch rảnh của tutor</p>
                         <div class="card-body">
                             <div class="calendar-header mb-2">
-                                <i class="fas fa-chevron-left text-muted" role="button"></i>
-                                <span>October 2025</span>
-                                <i class="fas fa-chevron-right text-muted" role="button"></i>
+                                    <i id="student-cal-prev" class="fas fa-chevron-left text-muted" role="button"></i>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <select id="student-cal-month" class="form-select form-select-sm"></select>
+                                        <select id="student-cal-year" class="form-select form-select-sm"></select>
+                                        <span id="student-cal-title" class="ms-2 small text-muted"></span>
+                                    </div>
+                                    <i id="student-cal-next" class="fas fa-chevron-right text-muted" role="button"></i>
                             </div>
-                            <div class="calendar-grid">
-                                <div class="day-header">Su</div>
-                                <div class="day-header">Mo</div>
-                                <div class="day-header">Tu</div>
-                                <div class="day-header">We</div>
-                                <div class="day-header">Th</div>
-                                <div class="day-header">Fr</div>
-                                <div class="day-header">Sa</div>
-                                <div class="text-muted">28</div><div class="text-muted">29</div><div class="text-muted">30</div><div class="text-muted">1</div><div class="text-muted">2</div><div class="text-muted">3</div><div class="text-muted">4</div>
-                                <div>5</div><div>6</div><div>7</div><div>8</div><div>9</div><div>10</div><div>11</div>
-                                <div>12</div><div>13</div><div>14</div><div>15</div><div>16</div><div>17</div><div>18</div>
-                                <div>19</div><div>20</div><div>21</div><div>22</div><div>23</div><div>24</div><div>25</div>
-                                <div>26</div><div class="day-number active">27</div><div>28</div><div>29</div><div>30</div><div>31</div><div class="text-muted">1</div>
+                            <div class="calendar-grid" id="student-calendar-grid">
+                                <!-- dynamic calendar will render here -->
                             </div>
                         </div>
                     </div>
@@ -244,7 +230,18 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body pt-1 pb-4">
-                    <p class="mb-4">Bạn có chắc muốn đặt lịch cho khung giờ <strong id="confirmStudentBookingTime">09:00 - 10:00</strong>?</p>
+                        <p class="mb-2">Bạn có chắc muốn đặt lịch cho khung giờ <strong id="confirmStudentBookingTime">09:00 - 10:00</strong>?</p>
+                        <p class="mb-2">Môn học: <strong id="confirmStudentBookingSubject">Toán học</strong></p>
+                    <div class="mb-3">
+                        <label for="confirmStudentBookingSubjectInput" class="form-label small">Môn học</label>
+                        <select id="confirmStudentBookingSubjectInput" class="form-select form-select-sm">
+                            <option>Toán học</option>
+                            <option>Tiếng Anh</option>
+                            <option>Lập trình C++</option>
+                            <option>Lập trình Python</option>
+                            <option>Vật lý đại cương</option>
+                        </select>
+                    </div>
                     <p class="text-muted small">Buổi học sẽ ở trạng thái 'Chờ xác nhận' cho đến khi Tutor đồng ý.</p>
                     <div class="d-flex justify-content-end">
                         <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Hủy</button>
@@ -303,6 +300,58 @@
                 </div>
                 <div class="modal-footer justify-content-end border-0">
                     <button type="button" class="btn btn-primary" onclick="handleAddTimeSlot()">Thêm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addNoteModal" tabindex="-1" aria-labelledby="addNoteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addNoteModalLabel">Ghi chú kết quả buổi tư vấn</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small">Ghi chú này sẽ được lưu vào lịch sử buổi tư vấn.</p>
+                    <div class="mb-3">
+                        <label for="consultationNote" class="form-label">Ghi chú</label>
+                        <textarea id="consultationNote" class="form-control" rows="5" placeholder="Nhập ghi chú, kết quả, tài liệu tham khảo..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-end border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" id="finalSaveNoteBtn">Lưu ghi chú</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="changeConsultationModal" tabindex="-1" aria-labelledby="changeConsultationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="changeConsultationModalLabel">Thay đổi buổi tư vấn</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small">Chọn ngày và khung giờ mới. Hệ thống sẽ gửi yêu cầu xác nhận cho sinh viên.</p>
+                    <div class="mb-3">
+                        <label for="changeDate" class="form-label">Ngày</label>
+                        <input type="date" id="changeDate" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Giờ bắt đầu - Giờ kết thúc</label>
+                        <div class="time-input-group">
+                            <input type="time" id="changeStartTime" class="form-control">
+                            <span class="time-separator"> - </span>
+                            <input type="time" id="changeEndTime" class="form-control">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-end border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" id="finalChangeConsultationBtn">Lưu thay đổi</button>
                 </div>
             </div>
         </div>
